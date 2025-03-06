@@ -1,4 +1,5 @@
 let gameState = 'start'; // Possible states: 'start', 'gameplay', 'end'
+let comment = ''; // Variable to store the comment
 
 let launch = {
   x: 10,
@@ -8,7 +9,7 @@ let launch = {
 }
 
 let environment = {
-  gravity: 0.05,
+  gravity: 0.2,
   airResistance: 0.005,
   wind: 5
 }
@@ -99,6 +100,7 @@ function draw() {
       drawGamePage();
       displayCurrentPlayer();
       displayPowerAndAngle();
+      displayComment();
       break;
     case 'end':
       drawEndScreen();
@@ -133,6 +135,8 @@ function drawGamePage() {
   // Display the terrain
   terrain.show();
 
+
+
   // Display the tanks
   player1.show();
   player2.show();
@@ -142,6 +146,10 @@ function drawGamePage() {
     grenade.update();
     grenade.show();
   }
+}
+
+function drawSchool(x, y) {
+  image(schoolImage, x - schoolImage.width / 2, y - schoolImage.height); // Draw the school image
 }
 
 function keyPressed() {
@@ -209,7 +217,7 @@ function launchGrenade(tank) {
   grenade.vy = sin(tank.angle) * (tank.power / 4); // reduce the power by half
   grenades.push(grenade);
   setTimeout(() => {
- // grenade.armed = true;
+  grenade.armed = true;
   }
     , 500);
 }
@@ -285,7 +293,7 @@ class Grenade {
       this.y += this.vy;
 
       // Check for direct hit on tanks
-      if (this.checkHit(player1) || this.checkHit(player2)) {
+      if (this.armed && (this.checkHit(player1) || this.checkHit(player2))) {
         this.explode();
       }
 
@@ -326,7 +334,7 @@ class Grenade {
     for (let i = 0; i < terrain.points.length; i++) {
       let d = dist(this.x, this.y, terrain.points[i].x, terrain.points[i].y);
       if (d < explosionRadius) {
-        terrain.points[i].y -= map(d, 0, explosionRadius, explosionRadius, 0);
+        terrain.points[i].y += map(d, 0, explosionRadius, explosionRadius, 0);
       }
     }
     // Check if the explosion hit any tank
@@ -345,11 +353,34 @@ class Grenade {
 
 function switchPlayer() {
   currentPlayer = currentPlayer === 1 ? 2 : 1;
+  comment = generateRandomComment();
   console.log("Switched to Player:", currentPlayer);
 }
 
+function generateRandomComment() {
+  const comments = [
+    "The rich wage war, but it’s the poor who die.",
+    "A soldier dies for his country. A politician dines on his sacrifice.",
+    "War doesn’t end when the fighting stops. It lingers in the minds of those who survived.",
+    "History is written by the victors, but the truth is buried with the dead.",
+    "The battlefield is an altar where the poor are sacrificed to the ambitions of the powerful.",
+    "A society that worships war will never know peace.", 
+    "Every war is a war against children.",
+    "Bullets are just coins fired at the poor.",
+    "When profits demand blood, war becomes inevitable.",
+    "The rich sell war like a product, and the poor buy it with their lives.",
+    "A nation that builds bombs instead of homes is already at war with its own people.",
+    "To the capitalist, war is not a tragedy—it’s a business opportunity.",
+    "Capitalism breeds war like clouds bring rain.",
+    "A state of war only serves as an excuse for domestic tyranny.",
+    "The ruling ideas of each age have ever been the ideas of its ruling class.",
+
+  ];
+  return comments[Math.floor(Math.random() * comments.length)];
+}
+
 function displayCurrentPlayer() {
-  textSize(25);
+  textSize(15);
   fill(0);
   textAlign(CENTER, TOP);
   if (currentPlayer === 1) {
@@ -368,6 +399,22 @@ function displayPowerAndAngle() {
   textSize(16);
   text(`Power: ${currentTank.power}`, powerSlider.x * 2 + powerSlider.width, height + 25);
   text(`Angle: ${degrees(currentTank.angle).toFixed(2)}`, angleSlider.x * 2 + angleSlider.width, height + 55);
+
+  // Display the current values of the sliders
+  textSize(12);
+  textAlign(LEFT, BOTTOM);
+  fill(0); // Ensure the text color is set to black
+  text(`Power: ${powerSlider.value()}`, 10, height - 30);
+  text(`Angle: ${angleSlider.value()}`, 10, height - 10);
+}
+
+function displayComment() {
+  fill(255, 255, 255, 200); // White background with some transparency
+  rect(width - 310, 10, 300, 80); // Position and size of the comment box
+  fill(0); // Black text
+  textSize(16);
+  textAlign(LEFT, TOP);
+  text(comment, width - 300, 20, 280, 80); // Position and size of the text inside the box
 }
 
 function resetGame() {
